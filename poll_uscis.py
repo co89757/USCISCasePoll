@@ -56,8 +56,8 @@ def send_mail(sentfrom,
               text="",
               files=[],
               server='smtp.gmail.com:587',
-              user='colin.brat@gmail.com',
-              password='dpmjo@zju1990'):
+              user='',
+              password='xxxxx'):
     "generate automated email to a client using Gmail, by default colin's Gmail. "
     assert type(to) == list
     assert type(files) == list
