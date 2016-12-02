@@ -1,0 +1,6 @@
+#logs
+.log
+#vscode folder
+.vscode/
+#pyc files
+*.pyc
