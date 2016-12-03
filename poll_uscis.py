@@ -63,16 +63,13 @@ def send_mail(sentfrom,
               subject="nil",
               text="",
               files=[],
-              server='smtp.gmail.com:587',
+              server=EMAIL_NOTICE_SENDER['smtpserver'],
               user=EMAIL_NOTICE_SENDER['email'],
               password=EMAIL_NOTICE_SENDER['password']):
-    "generate automated email to a client using Gmail, by default colin's Gmail. "
+    "send email to a list of receivers"
     assert type(to) == list
     assert type(files) == list
     # get email settings
-    server = EMAIL_NOTICE_SENDER.get('smtpserver')
-    user = EMAIL_NOTICE_SENDER.get('email')
-    password = EMAIL_NOTICE_SENDER.get('password')
     if not (server and user and password):
         raise LookupError("Invalid email sending settings")
     msg = MIMEMultipart()
@@ -186,13 +183,14 @@ def main():
     days_elapsed = get_days_since_received(detail)
 
     report = report_format.format(casenumber, status, days_elapsed)
-    if opts.detailOn:
-        report = '\n'.join((report, "\nDetail:\n\n%s" % detail))
-
+    # compare with last status
     changed, laststatus = on_status_fetch(status, casenumber)
     # generate report
     report = '\n'.join(
-        (report, "Previous Status:%s \nChanged?: %s" % (laststatus, changed)))
+        [report, "Previous Status:%s \nChanged?: %s" % (laststatus, changed),
+         "Current Timestamp: %s " % datetime.now().strftime("%Y-%m-%d %H:%M")])
+    if opts.detailOn:
+        report = '\n'.join((report, "\nDetail:\n\n%s" % detail))
     # console output
     print report
     # email notification on status change
