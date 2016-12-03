@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*
+## @author: colin
+## @date: 2016-11-30
+## @filename: poll_uscis.py
 from pyquery import PyQuery as pq
 import requests
 import smtplib
