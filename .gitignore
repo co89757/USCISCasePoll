@@ -4,3 +4,5 @@
 .vscode/
 #pyc files
 *.pyc
+#backup files
+*.orig
