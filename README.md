@@ -30,3 +30,20 @@ python poll_uscis.py -c <casenumber> -d/--detail
 ## send email alert
 python poll_uscis.py -c <casenumber> --mailto <comma-separated-emails>
 ```
+## Set it to periodic scheduled job 
+
+### Unix
+
+Use crontab to set a daily poll job:
+
+```sh
+
+# edit your cron jobs and append a cronjob to it 
+$crontab -e 
+```
+
+In the opened editor, append the following line:
+```sh
+## schedule a daily job to poll your case status and trigger email on change
+@daily python /path/to/poll_uscis.py -c $casenumber --mailto $yourmail >/dev/null
+```
