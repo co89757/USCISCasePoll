@@ -20,6 +20,10 @@ FILENAME_LASTSTATUS = os.path.join(sys.path[0], "LAST_STATUS_{0}.txt")
 
 # ----------------- SETTINGS -------------------
 # set up your email sender here
+# example settings: (if you use gmail)
+# email: myname@gmail.com
+# password: xxxx
+# smtpserver: smtp.gmail.com:587
 EMAIL_NOTICE_SENDER = {"email": "", "password": "", "smtpserver": ""}
 
 
