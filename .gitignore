@@ -6,3 +6,5 @@
 *.pyc
 #backup files
 *.orig
+#record history file
+LAST_STATUS*

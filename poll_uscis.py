@@ -3,6 +3,8 @@ from pyquery import PyQuery as pq
 import requests
 import smtplib
 import os
+import sys
+import os.path
 import re
 from email.MIMEMultipart import MIMEMultipart
 from email.MIMEBase import MIMEBase
@@ -11,8 +13,14 @@ from email.utils import COMMASPACE, formatdate
 from email import Encoders
 from optparse import OptionParser
 from datetime import datetime, date
+
 STATUS_OK = 0
 STATUS_ERROR = -1
+FILENAME_LASTSTATUS = os.path.join(sys.path[0], "LAST_STATUS_{0}.txt")
+
+# ----------------- SETTINGS -------------------
+# set up your email sender here
+EMAIL_NOTICE_SENDER = {"email": "", "password": "", "smtpserver": ""}
 
 
 def poll_optstatus(casenumber):
@@ -56,12 +64,17 @@ def send_mail(sentfrom,
               text="",
               files=[],
               server='smtp.gmail.com:587',
-              user='',
-              password='xxxxx'):
+              user=EMAIL_NOTICE_SENDER['email'],
+              password=EMAIL_NOTICE_SENDER['password']):
     "generate automated email to a client using Gmail, by default colin's Gmail. "
     assert type(to) == list
     assert type(files) == list
-
+    # get email settings
+    server = EMAIL_NOTICE_SENDER.get('smtpserver')
+    user = EMAIL_NOTICE_SENDER.get('email')
+    password = EMAIL_NOTICE_SENDER.get('password')
+    if not (server and user and password):
+        raise LookupError("Invalid email sending settings")
     msg = MIMEMultipart()
     msg['From'] = sentfrom
     msg['To'] = COMMASPACE.join(to)
@@ -87,6 +100,36 @@ def send_mail(sentfrom,
         print "successfully sent the mail !"
     except:
         print 'failed to send a mail '
+
+
+def on_status_fetch(status, casenumber):
+    """
+    fetch status and update last_status record file,
+    or create it if it doesn't exist
+    Returns:
+        changed flag indicating if status has changed since last time and last status
+        (changed, last_status)
+        If no prior history is available, then return (False, None)
+    """
+    # normalize
+    status = status.strip()
+    record_filepath = FILENAME_LASTSTATUS.format(casenumber)
+    changed = False
+    last_status = None
+    if not os.path.exists(record_filepath):
+        with open(record_filepath, 'w') as f:
+            f.write(status)
+    # there is prior status, read it and compare with current
+    else:
+        with open(record_filepath, 'r+') as f:
+            last_status = f.read().strip()
+            # update status on difference
+            if status != last_status:
+                changed = True
+                f.seek(0)
+                f.truncate()
+                f.write(status)
+    return (changed, last_status)
 
 
 def main():
@@ -145,12 +188,17 @@ def main():
     report = report_format.format(casenumber, status, days_elapsed)
     if opts.detailOn:
         report = '\n'.join((report, "\nDetail:\n\n%s" % detail))
+
+    changed, laststatus = on_status_fetch(status, casenumber)
+    # generate report
+    report = '\n'.join(
+        (report, "Previous Status:%s \nChanged?: %s" % (laststatus, changed)))
     # console output
     print report
-    # email notification
-    if opts.receivers:
+    # email notification on status change
+    if opts.receivers and changed:
         recv_list = opts.receivers.split(',')
-        subject = "Your USCIS Case %s Status Report " % casenumber
+        subject = "Your USCIS Case %s Status Change Notice " % casenumber
         send_mail("USCIS Case Status Notify", recv_list, subject, report)
 
 
