@@ -139,7 +139,7 @@ def on_status_fetch(status, casenumber):
 def main():
     def get_days_since_received(status_detail):
         "parse case status and computes number of days elapsed since case-received"
-        date_regex = re.compile(r'^On (\w+ +\d+, \d{4}), we received.*')
+        date_regex = re.compile(r'^On (\w+ +\d+, \d{4}), .*')
         m = date_regex.match(status_detail)
         datestr = m.group(1)
         if not datestr:
