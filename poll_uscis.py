@@ -9,11 +9,11 @@ import os
 import sys
 import os.path
 import re
-from email.MIMEMultipart import MIMEMultipart
-from email.MIMEBase import MIMEBase
-from email.MIMEText import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.mime.base import MIMEBase
+from email.mime.text import MIMEText
 from email.utils import COMMASPACE, formatdate
-from email import Encoders
+from email import encoders
 from optparse import OptionParser
 from datetime import datetime, date
 
@@ -90,7 +90,7 @@ def send_mail(sentfrom,
     for f in files:
         part = MIMEBase('application', "octet-stream")
         part.set_payload(open(f, 'rb').read())
-        Encoders.encode_base64(part)
+        encoders.encode_base64(part)
         part.add_header('Content-Disposition',
                         'attachment; filename="%s"' % os.path.basename(f))
         msg.attach(part)
@@ -101,9 +101,9 @@ def send_mail(sentfrom,
         smtp_s.login(user, password)
         smtp_s.sendmail(sentfrom, to, msg.as_string())
         smtp_s.close()
-        print "successfully sent the mail !"
+        print("successfully sent the mail !")
     except:
-        print 'failed to send a mail '
+        print('failed to send a mail ')
 
 
 def on_status_fetch(status, casenumber):
@@ -139,9 +139,9 @@ def on_status_fetch(status, casenumber):
 def main():
     def get_days_since_received(status_detail):
         "parse case status and computes number of days elapsed since case-received"
-        date_regex = re.compile(r'^On (\w+ +\d+, \d{4}), .*')
+        date_regex = re.compile(r'^(As of|On) (\w+ +\d+, \d{4}), .*')
         m = date_regex.match(status_detail)
-        datestr = m.group(1)
+        datestr = m.group(2)
         if not datestr:
             return -1
         recv_date = datetime.strptime(datestr, "%B %d, %Y").date()
@@ -181,7 +181,7 @@ def main():
     # poll status
     code, status, detail = poll_optstatus(casenumber)
     if code == STATUS_ERROR:
-        print "The case number %s is invalid." % casenumber
+        print("The case number %s is invalid." % casenumber)
         return
     # report format
     report_format = ("-------  Your USCIS Case [{0}]---------"
@@ -199,7 +199,7 @@ def main():
     if opts.detailOn:
         report = '\n'.join((report, "\nDetail:\n\n%s" % detail))
     # console output
-    print report
+    print(report)
     # email notification on status change
     if opts.receivers and changed:
         recv_list = opts.receivers.split(',')
